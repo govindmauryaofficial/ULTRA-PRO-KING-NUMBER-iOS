@@ -1,0 +1,64 @@
+name: Build unsigned iOS IPA
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate Xcode project
+        run: |
+          mkdir -p UltraProKingNumber.xcodeproj
+          cat > UltraProKingNumber.xcodeproj/project.pbxproj <<'PBX'
+          // !$*UTF8*$!
+          {
+            archiveVersion = 1;
+            classes = {};
+            objectVersion = 56;
+            objects = {
+              A00000000000000000000001 = { isa = PBXProject; buildConfigurationList = A00000000000000000000010; compatibilityVersion = "Xcode 14.0"; mainGroup = A00000000000000000000002; targets = (A0000000000000000000000E); };
+              A00000000000000000000002 = { isa = PBXGroup; children = (A00000000000000000000005, A00000000000000000000004); sourceTree = "<group>"; };
+              A00000000000000000000004 = { isa = PBXGroup; children = (A00000000000000000000007); name = Products; sourceTree = "<group>"; };
+              A00000000000000000000005 = { isa = PBXGroup; children = (A00000000000000000000008, A00000000000000000000009); path = UltraProKingNumber; sourceTree = "<group>"; };
+              A00000000000000000000007 = { isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = UltraProKingNumber.app; sourceTree = BUILT_PRODUCTS_DIR; };
+              A00000000000000000000008 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UltraProKingNumberApp.swift; sourceTree = "<group>"; };
+              A00000000000000000000009 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+              A0000000000000000000000A = { isa = PBXBuildFile; fileRef = A00000000000000000000008; };
+              A0000000000000000000000B = { isa = PBXBuildFile; fileRef = A00000000000000000000009; };
+              A0000000000000000000000C = { isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A0000000000000000000000A, A0000000000000000000000B); runOnlyForDeploymentPostprocessing = 0; };
+              A0000000000000000000000E = { isa = PBXNativeTarget; buildConfigurationList = A00000000000000000000011; buildPhases = (A0000000000000000000000C); buildRules = (); dependencies = (); name = UltraProKingNumber; productName = UltraProKingNumber; productReference = A00000000000000000000007; productType = "com.apple.product-type.application"; };
+              A00000000000000000000010 = { isa = XCConfigurationList; buildConfigurations = (A00000000000000000000012, A00000000000000000000013); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+              A00000000000000000000011 = { isa = XCConfigurationList; buildConfigurations = (A00000000000000000000014); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+              A00000000000000000000012 = { isa = XCBuildConfiguration; buildSettings = { IPHONEOS_DEPLOYMENT_TARGET = 16.0; SDKROOT = iphoneos; SWIFT_VERSION = 5.0; }; name = Debug; };
+              A00000000000000000000013 = { isa = XCBuildConfiguration; buildSettings = { IPHONEOS_DEPLOYMENT_TARGET = 16.0; SDKROOT = iphoneos; SWIFT_VERSION = 5.0; }; name = Release; };
+              A00000000000000000000014 = { isa = XCBuildConfiguration; buildSettings = { PRODUCT_BUNDLE_IDENTIFIER = com.ultrapro.kingnumber; PRODUCT_NAME = UltraProKingNumber; CODE_SIGNING_ALLOWED = NO; CODE_SIGNING_REQUIRED = NO; SWIFT_VERSION = 5.0; IPHONEOS_DEPLOYMENT_TARGET = 16.0; TARGETED_DEVICE_FAMILY = "1,2"; GENERATE_INFOPLIST_FILE = YES; INFOPLIST_KEY_CFBundleDisplayName = "Ultra Pro King"; INFOPLIST_KEY_UIUserInterfaceStyle = Dark; }; name = Release; };
+            };
+            rootObject = A00000000000000000000001;
+          }
+          PBX
+      - name: Build unsigned app
+        run: |
+          xcodebuild -version
+          xcodebuild -project UltraProKingNumber.xcodeproj -target UltraProKingNumber -sdk iphoneos -configuration Release -derivedDataPath build CODE_SIGNING_ALLOWED=NO build
+
+      - name: Package unsigned IPA
+        run: |
+          APP_PATH="build/Build/Products/Release-iphoneos/UltraProKingNumber.app"
+          test -d "$APP_PATH"
+          mkdir -p Payload output
+          cp -R "$APP_PATH" Payload/
+          /usr/bin/zip -qry output/UltraProKingNumber-unsigned.ipa Payload
+
+      - name: Upload unsigned IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: unsigned-ipa
+          path: output/UltraProKingNumber-unsigned.ipa
+          if-no-files-found: error
