@@ -1,0 +1,21 @@
+name: UltraProKingNumber
+options:
+  deploymentTarget:
+    iOS: "16.0"
+targets:
+  UltraProKingNumber:
+    type: application
+    platform: iOS
+    sources:
+      - path: UltraProKingNumber
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.ultrapro.kingnumber
+        PRODUCT_NAME: UltraProKingNumber
+        INFOPLIST_KEY_CFBundleDisplayName: Ultra Pro King
+        INFOPLIST_KEY_UIUserInterfaceStyle: Dark
+        GENERATE_INFOPLIST_FILE: YES
+        SWIFT_VERSION: "5.0"
+        TARGETED_DEVICE_FAMILY: "1,2"
+        CODE_SIGNING_ALLOWED: NO
+        CODE_SIGNING_REQUIRED: NO
